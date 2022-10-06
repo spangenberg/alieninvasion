@@ -20,6 +20,7 @@ alieninvasion simulate [number of aliens] [flags]
 ### Options
 
 ```
+      --concurrent             run simulation concurrently
       --generate-alien-names   Generate random alien names
   -h, --help                   help for simulate
       --map-path string        Location of the file with the world map

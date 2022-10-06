@@ -3,6 +3,7 @@ package internal
 import (
 	"fmt"
 	"math/rand"
+	"sync"
 )
 
 // World represents the world in which the aliens move around and fight.
@@ -11,6 +12,7 @@ type World struct {
 	Cities map[int]*City
 
 	cityNameLookup map[string]int
+	m              sync.RWMutex
 }
 
 // NewWorld creates a new world.
@@ -41,18 +43,31 @@ func NewWorld(cfg *Config) (*World, error) {
 
 // Len returns the number of cities in the world.
 func (w *World) Len() int {
+	w.m.RLock()
+	defer w.m.RUnlock()
+
 	return len(w.Cities)
 }
 
 // PrintWorld prints the world.
 func (w *World) PrintWorld(out func(s string)) {
+	w.m.RLock()
+	defer w.m.RUnlock()
+
 	for _, city := range w.Cities {
+		if city.Destroyed {
+			continue
+		}
+
 		out(city.MapFormat())
 	}
 }
 
 // RandomCity returns a random city from the world.
 func (w *World) RandomCity() *City {
+	w.m.RLock()
+	defer w.m.RUnlock()
+
 	if len(w.Cities) == 0 {
 		return nil
 	}
@@ -62,6 +77,9 @@ func (w *World) RandomCity() *City {
 
 // RemoveCity removes the city from the world and itself from all neighboring cities.
 func (w *World) RemoveCity(city *City) {
+	w.m.Lock()
+	defer w.m.Unlock()
+
 	delete(w.Cities, w.cityNameLookup[city.name])
 	delete(w.cityNameLookup, city.name)
 }

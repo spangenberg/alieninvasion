@@ -7,12 +7,15 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/spangenberg/alieninvasion/internal"
+	"github.com/spangenberg/alieninvasion/internal/concurrent"
 	"github.com/spangenberg/alieninvasion/internal/sequential"
 )
 
 const minAliens = 2
 
 func newCmdSimulate(cfg *internal.Config) *cobra.Command {
+	var concurrently bool
+
 	cmd := &cobra.Command{
 		Use:   "simulate [number of aliens]",
 		Short: "Simulates an alien invasion",
@@ -39,9 +42,14 @@ func newCmdSimulate(cfg *internal.Config) *cobra.Command {
 			out := func(s string) {
 				cmd.Println(s)
 			}
-
-			if err = sequential.SimulateInvasion(cfg, earth, out); err != nil {
-				return fmt.Errorf("failed to simulate invasion: %w", err)
+			if concurrently {
+				if err = concurrent.SimulateInvasion(cfg, earth, out); err != nil {
+					return fmt.Errorf("failed to simulate invasion: %w", err)
+				}
+			} else {
+				if err = sequential.SimulateInvasion(cfg, earth, out); err != nil {
+					return fmt.Errorf("failed to simulate invasion: %w", err)
+				}
 			}
 
 			cmd.Print("\nWorld after simulation:\n\n")
@@ -50,6 +58,7 @@ func newCmdSimulate(cfg *internal.Config) *cobra.Command {
 			return nil
 		}),
 	}
+	cmd.Flags().BoolVar(&concurrently, "concurrent", false, "run simulation concurrently")
 	cmd.Flags().BoolVar(&cfg.GenerateAlienNames, "generate-alien-names", false, "Generate random alien names")
 	cmd.Flags().StringVar(&cfg.MapPath, "map-path", "", "Location of the file with the world map")
 
