@@ -1,0 +1,34 @@
+run:
+  skip-dirs:
+    - internal/version
+  skip-files:
+    - ".*_test\\.go$"
+linters:
+  enable-all: true
+  disable:
+    - contextcheck
+    - exhaustivestruct
+    - exhaustruct
+    - gci
+    - goerr113
+    - golint
+    - ifshort
+    - interfacer
+    - maligned
+    - paralleltest
+    - rowserrcheck
+    - scopelint
+    - sqlclosecheck
+    - structcheck
+    - wastedassign
+issues:
+  exclude-rules:
+    - linters:
+      - gosec
+      text: "G404:"
+    - linters:
+      - cyclop
+      text: "processCity"
+    - linters:
+      - cyclop
+      text: "processLine"
